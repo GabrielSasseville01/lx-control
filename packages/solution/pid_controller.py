@@ -63,6 +63,8 @@ class PIDController():
 
         # --- Combine control output
         omega = p_term + i_term + d_term
+
+        # Debugging
         # print('p:', p_term)
         # print('i', i_term)
         # print('d:', d_term)
@@ -74,23 +76,6 @@ class PIDController():
         v = v_ref
 
         return v, omega
-
-        # e_current = theta_ref - theta_curr # error at this time instant
-
-        # # Integration
-        # e_int_current = self.prev_int_heading + e_current * delta_t # integral error at the previous instant plus the new increment
-        # self.prev_int_heading = e_int_current # the present becomes the past for the future (yep, read this again)
-        
-        # # Derivative
-        # e_der = (self.prev_e_heading - e_current)/delta_t
-        # self.prev_e_heading = e_current
-        
-        # # PID Control
-        # u_curr = self.kp * e_current + self.ki * e_int_current + self.kd * e_der
-        
-        # v = v_ref
-        # omega = u_curr
-        # return v, omega
 
     def OffsetControl(self,
                       v_ref: float,
@@ -119,31 +104,32 @@ class PIDController():
         # should be the one to update them also.
 
         # --- Compute lateral offset error
-        # --- Compute lateral offset error
         e_offset = y_ref - y_curr
 
-        # --- Update integral term (unclamped)
         # self.prev_int_offset += np.clip(e_offset * delta_t, -0.5, 0.5)
+        # --- Update integral term (unclamped)
         self.prev_int_offset += e_offset * delta_t
         # self.prev_int_offset = np.clip(self.prev_int_offset, -1.0, 1.0)
 
         # --- Derivative term
         d_offset = (e_offset - self.prev_e_offset) / delta_t if delta_t > 0 else 0.0
 
-        # --- Compute individual PID components
+        # --- Compute PID components
         p_term = self.kp * e_offset
         i_term = self.ki * self.prev_int_offset
         d_term = self.kd * d_offset
 
-        print('p:', p_term)
-        print('i:', i_term)
-        print('d:', d_term)
+        # print('p:', p_term)
+        # print('i:', i_term)
+        # print('d:', d_term)
 
         # --- Clamp *only* the integral contribution
-        # i_term = np.clip(i_term, -0.005, 0.005)  # Adjust this range based on your ω limits
+        # i_term = np.clip(i_term, -0.005, 0.005)  # Adjust this range based on limits
 
         # --- Combine control output
         omega = p_term + i_term + d_term
+
+        # Debugging
         # print('p:', p_term)
         # print('i', i_term)
         # print('d:', d_term)
@@ -155,37 +141,6 @@ class PIDController():
         v = v_ref
 
         return v, omega
-
-        # e_offset = y_ref - y_curr
-
-        # # --- Update integral term (unclamped)
-        # self.prev_int_offset += np.clip(e_offset * delta_t, -0.5, 0.5)
-
-
-        # # --- Derivative term
-        # d_offset = (e_offset - self.prev_e_offset) / delta_t if delta_t > 0 else 0.0
-
-        # # --- PID terms
-        # p_term = self.kp * e_offset
-        # i_term = self.ki * self.prev_int_offset
-        # d_term = self.kd * d_offset
-
-        # # --- Clamp only the contribution of the integral term (not the stored integral)
-        # # i_term = np.clip(i_term, -1.0, 1.0)
-        # print('p:', p_term)
-        # print('i', i_term)
-        # print('d:', d_term)
-
-        # # --- Combine control output for angular velocity
-        # omega = p_term + i_term + d_term
-
-        # # --- Update previous error
-        # self.prev_e_offset = e_offset
-
-        # # --- Constant linear velocity
-        # v = v_ref
-
-        # return v, omega
 
     def SetGains(self, kp: float, ki: float, kd: float) -> None:
         # Set the PID gains
